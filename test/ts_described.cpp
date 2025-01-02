@@ -9,9 +9,9 @@
 #include "Json_Writer.h"
 #include "Serializer.h"
 
-namespace basic_testing {
+namespace described_testing {
 
-class Basic : public testing::Test {
+class Described : public testing::Test {
  protected:
   std::stringstream ss;
   persistence::Json_Writer json_wr{ss};
@@ -31,14 +31,10 @@ class A {
   double y{3.14};
 
  public:
-  template <Is_Serializer Serializer>
-  void serialize(Serializer& s) const {
-    s.serialize("x", x);
-    s.serialize("y", y);
-  }
+  BOOST_DESCRIBE_CLASS(A, (), (), (), (x, y));
 };
 
-TEST_F(Basic, A) {
+TEST_F(Described, A) {
   A a;
 
   std::string json_str = get_json_serialize_of(a);
@@ -56,14 +52,10 @@ class B {
  public:
   B() : val(21) {};
 
-  template <Is_Serializer Serializer>
-  void serialize(Serializer& s) const {
-    s.serialize("val", val);
-    s.serialize("is_x", is_x);
-    s.serialize("vec_in_b", vec_in_b);
-  }
+  BOOST_DESCRIBE_CLASS(B, (), (), (val), (is_x, vec_in_b));
 };
-TEST_F(Basic, private_protected_member) {
+
+TEST_F(Described, private_protected_member) {
   B b;
 
   std::string json_str = get_json_serialize_of(b);
@@ -74,14 +66,9 @@ TEST_F(Basic, private_protected_member) {
 struct C : public A, B {
   std::optional<std::string> s;
 
-  template <Is_Serializer Serializer>
-  void serialize(Serializer& ser) const {
-    ser.serialize("Base A", *dynamic_cast<const A*>(this));
-    ser.serialize("Base B", *dynamic_cast<const B*>(this));
-    ser.serialize("s", s);
-  }
+  BOOST_DESCRIBE_CLASS(C, (A, B), (), (), (s));
 };
-TEST_F(Basic, inherit) {
+TEST_F(Described, inherit) {
   std::stringstream ss;
 
   C c{};
@@ -89,10 +76,10 @@ TEST_F(Basic, inherit) {
 
   EXPECT_EQ(
       json_str,
-      R"""({"Base A":{"x":42,"y":3.14},"Base B":{"val":21,"is_x":true,"vec_in_b":[42]},"s":{"has value":false}})""");
+      R"""({"described_testing::A":{"x":42,"y":3.14},"described_testing::B":{"val":21,"is_x":true,"vec_in_b":[42]},"s":{"has value":false}})""");
 }
 
-TEST_F(Basic, inherit_s) {
+TEST_F(Described, inherit_s) {
   std::stringstream ss;
 
   C c{};
@@ -101,7 +88,7 @@ TEST_F(Basic, inherit_s) {
 
   EXPECT_EQ(
       json_str,
-      R"""({"Base A":{"x":42,"y":3.14},"Base B":{"val":21,"is_x":true,"vec_in_b":[42]},"s":{"has value":true,"value":"Hello"}})""");
+      R"""({"described_testing::A":{"x":42,"y":3.14},"described_testing::B":{"val":21,"is_x":true,"vec_in_b":[42]},"s":{"has value":true,"value":"Hello"}})""");
 }
 
 class ID {
@@ -111,22 +98,16 @@ class ID {
   ID() = default;
   ID(int id) : id(id) {}
 
-  template <Is_Serializer Serializer>
-  void serialize(Serializer& ser) const {
-    ser.serialize("id", id);
-  }
+  BOOST_DESCRIBE_CLASS(ID, (), (), (), (id));
 };
 
 struct D {
   std::vector<ID> vector_of_a{1, 2, 3, 4};
 
-  template <Is_Serializer Serializer>
-  void serialize(Serializer& ser) const {
-    ser.serialize("vector_of_a", vector_of_a);
-  }
+  BOOST_DESCRIBE_CLASS(D, (), (vector_of_a), (), ());
 };
 
-TEST_F(Basic, composite_object) {
+TEST_F(Described, composite_object) {
   D d;
 
   std::string json_str = get_json_serialize_of(d);
@@ -137,21 +118,23 @@ TEST_F(Basic, composite_object) {
 
 enum class Color { black = 0, blue = 42, white = 255 };
 
+BOOST_DESCRIBE_ENUM(Color, black, blue, white);
+
 class Palette {
  public:
   std::vector<Color> color;
 
-  template <Is_Serializer Serializer>
-  void serialize(Serializer& ser) const {
-    ser.serialize("color", color);
-  }
+  BOOST_DESCRIBE_CLASS(Palette, (), (color), (), ());
 };
 
-TEST_F(Basic, vector_of_enum) {
+TEST_F(Described, vector_of_enum) {
   Palette palette{.color = {Color::white, Color::blue, Color::black}};
 
   std::string json_str = get_json_serialize_of(palette);
 
-  EXPECT_EQ(json_str, R"""({"color":[255,42,0]})""");
+  //  EXPECT_EQ(json_str, R"""({"color":[255,42,0]})""");
+
+  EXPECT_EQ(json_str, R"""({"color":["white","blue","black"]})""");
 }
-};  // namespace basic_testing
+
+}  // namespace described_testing
