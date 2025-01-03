@@ -1,7 +1,7 @@
 #pragma once
 #include <boost/core/demangle.hpp>
 #include <boost/describe.hpp>
-#include <iostream>
+#include <memory>
 #include <type_traits>
 
 #include "concepts.h"
@@ -37,6 +37,18 @@ class Serializer {
       this->serialize("value", var.value());
     } else {
       this->serialize("has value", false);
+    }
+    this->end_composite();
+  };
+
+  template <typename T>
+  void serialize(std::shared_ptr<T> const& var) {
+    this->start_composite();
+    if (var) {
+      this->serialize("is null", false);
+      this->serialize("value", *var);
+    } else {
+      this->serialize("is null", true);
     }
     this->end_composite();
   };
@@ -84,7 +96,6 @@ class Serializer {
     this->end_composite();
   };
 
-  //  template <Is_Serializable<Serializer> Serializable>
   template <typename S, typename T>
     requires std::is_convertible_v<S, std::string_view>
   void serialize(S name, T const& obj) {
@@ -108,8 +119,6 @@ class Serializer {
     }
 
     boost::mp11::mp_for_each<Bd>([&](auto base) {
-      //      this->new_element();
-
       using Base_Type = typename decltype(base)::type;
       Base_Type const& base_part = (Base_Type const&)(obj);
 
@@ -117,8 +126,6 @@ class Serializer {
           boost::core::demangle(typeid(std::declval<Base_Type>()).name());
 
       this->serialize(name_base_class, base_part);
-      // this->serialize(base_part, true);
-      //    this->end_element();
     });
 
     boost::mp11::mp_for_each<Md>([&](auto D) {

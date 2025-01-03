@@ -99,16 +99,6 @@ class Json_Writer {
     os << static_cast<std::underlying_type<E>::type>(x);
   }
 
-  /*
-  template <Is_Serializable<Json_Writer> Serializable>
-  void write(Serializable const& obj) {
-    manage_comma();  // ?
-    Json_Writer jw(os);
-    Serializer<Json_Writer> serializer(jw);
-    obj.serialize(serializer);
-  };
-  */
-
   os_type& os;
 };
 }  // namespace persistence

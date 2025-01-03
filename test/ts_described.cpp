@@ -2,6 +2,7 @@
 
 #include <boost/describe.hpp>
 #include <ios>
+#include <memory>
 #include <numbers>
 #include <sstream>
 #include <string>
@@ -68,6 +69,7 @@ struct C : public A, B {
 
   BOOST_DESCRIBE_CLASS(C, (A, B), (), (), (s));
 };
+
 TEST_F(Described, inherit) {
   std::stringstream ss;
 
@@ -131,6 +133,31 @@ TEST_F(Described, vector_of_enum) {
   Palette palette{.color = {Color::white, Color::blue, Color::black}};
 
   std::string json_str = get_json_serialize_of(palette);
+
+  //  EXPECT_EQ(json_str, R"""({"color":[255,42,0]})""");
+
+  EXPECT_EQ(json_str, R"""({"color":["white","blue","black"]})""");
+}
+
+struct Node {
+  size_t id;
+
+  std::vector<std::shared_ptr<Node> > child;
+
+  BOOST_DESCRIBE_CLASS(Node, (), (id, child), (), ());
+};
+
+template <Is_Serializer Serializer>
+void serialize(Serializer& ser, std::shared_ptr<Node> const& ptr) const {
+  ser.serialize("id", ptr->id);
+}
+
+TEST_F(Described, with_overloading) {
+  Node a(0), b(1);
+
+  a.child.push_back(std::make_shared<Node>(b));
+
+  std::string json_str = get_json_serialize_of(a);
 
   //  EXPECT_EQ(json_str, R"""({"color":[255,42,0]})""");
 

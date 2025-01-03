@@ -49,7 +49,3 @@ template <typename T>
 concept Is_Enum_Boost_Described = requires(T obj) {
   boost::mp11::mp_for_each<boost::describe::describe_enumerators<T> >([]() {});
 };
-/*
-template <typename T>
-concept Is_Boost_Described
-*/

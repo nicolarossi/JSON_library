@@ -1,0 +1,14 @@
+[
+{
+  "directory": "/home/nop/Project/JSON_library/build/test",
+  "command": "/usr/bin/c++  -I/home/nop/Project/JSON_library/test/../include -std=gnu++20 -o CMakeFiles/testing.dir/testing.cpp.o -c /home/nop/Project/JSON_library/test/testing.cpp",
+  "file": "/home/nop/Project/JSON_library/test/testing.cpp",
+  "output": "test/CMakeFiles/testing.dir/testing.cpp.o"
+},
+{
+  "directory": "/home/nop/Project/JSON_library/build/test",
+  "command": "/usr/bin/c++  -I/home/nop/Project/JSON_library/test/../include -std=gnu++20 -o CMakeFiles/testing.dir/ts_basic.cpp.o -c /home/nop/Project/JSON_library/test/ts_basic.cpp",
+  "file": "/home/nop/Project/JSON_library/test/ts_basic.cpp",
+  "output": "test/CMakeFiles/testing.dir/ts_basic.cpp.o"
+}
+]

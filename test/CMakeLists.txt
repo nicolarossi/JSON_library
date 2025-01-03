@@ -6,7 +6,7 @@ add_executable(testing testing.cpp "${test_sources}")
 
 set(CMAKE_BUILD_TYPE Debug)
 add_test( TARGET testing )
-add_compile_options(-fconcepts-diagnostics-depth=4)
+add_compile_options(-fconcepts-diagnostics-depth=4 -g3)
 
 target_include_directories(testing PRIVATE ../include)
 #target_link_libraries( testing PRIVATE gtest Boost::json )
