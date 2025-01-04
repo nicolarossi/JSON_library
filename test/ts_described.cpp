@@ -149,7 +149,7 @@ struct Node {
 
 template <Is_Serializer Serializer>
 void serialize(Serializer& ser, std::shared_ptr<Node> const& ptr) {
-  ser.serialize("id", ptr->id);
+  ser.serialize("id child", ptr->id);
 }
 
 TEST_F(Described, with_overloading) {
