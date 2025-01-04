@@ -148,7 +148,7 @@ struct Node {
 };
 
 template <Is_Serializer Serializer>
-void serialize(Serializer& ser, std::shared_ptr<Node> const& ptr) const {
+void serialize(Serializer& ser, std::shared_ptr<Node> const& ptr) {
   ser.serialize("id", ptr->id);
 }
 

@@ -123,7 +123,7 @@ class Serializer {
       Base_Type const& base_part = (Base_Type const&)(obj);
 
       std::string name_base_class =
-          boost::core::demangle(typeid(std::declval<Base_Type>()).name());
+          boost::core::demangle(typeid(base_part).name());
 
       this->serialize(name_base_class, base_part);
     });
