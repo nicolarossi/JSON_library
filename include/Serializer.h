@@ -7,6 +7,17 @@
 #include "concepts.h"
 
 namespace persistence {
+
+template <typename Serializer, Is_Serializable<Serializer> Serializable>
+void serialize(Serializer& ser, Serializable const& obj) {
+  obj.serialize(ser);
+}
+
+template <typename Serializer, typename T>
+void serialize(Serializer& ser, T const& obj) {
+  ser.serialize(obj);
+}
+
 template <Is_Writer Writer>
 class Serializer {
   Writer& wr;
@@ -19,22 +30,25 @@ class Serializer {
   void start_container() { wr.start_container(); }
   void end_container() { wr.end_container(); }
 
-  /* an 'element' is either  :
+  /*
+   an 'element' is either  :
   - a pair < name, object >
   - or an object in a container
 
   This is needed for write comma in JSON.
+
   */
 
   void new_element() { wr.new_element(); }
   void end_element() {}
 
+ public:
   template <typename T>
   void serialize(std::optional<T> const& var) {
     this->start_composite();
     if (var.has_value()) {
       this->serialize("has value", true);
-      this->serialize("value", var.value());
+      serialize("value", var.value());
     } else {
       this->serialize("has value", false);
     }
@@ -46,7 +60,7 @@ class Serializer {
     this->start_composite();
     if (var) {
       this->serialize("is null", false);
-      this->serialize("value", *var);
+      serialize("value", *var);
     } else {
       this->serialize("is null", true);
     }
@@ -75,7 +89,7 @@ class Serializer {
     this->start_container();
     for (auto const& el : container) {
       this->new_element();
-      this->serialize(el);
+      persistence::serialize(*this, el);
       this->end_element();
     }
     this->end_container();
@@ -102,7 +116,7 @@ class Serializer {
     this->new_element();
     wr.write_id(name, obj);
 
-    this->serialize(obj);
+    serialize(obj);
     this->end_element();
   }
 

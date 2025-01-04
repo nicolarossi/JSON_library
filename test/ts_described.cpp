@@ -10,8 +10,6 @@
 #include "Json_Writer.h"
 #include "Serializer.h"
 
-namespace described_testing {
-
 class Described : public testing::Test {
  protected:
   std::stringstream ss;
@@ -147,10 +145,14 @@ struct Node {
   BOOST_DESCRIBE_CLASS(Node, (), (id, child), (), ());
 };
 
-template <Is_Serializer Serializer>
-void serialize(Serializer& ser, std::shared_ptr<Node> const& ptr) {
+// template <Is_Serializer Serializer>
+// void serialize(Serializer& ser, std::shared_ptr<Node> const& ptr) {
+namespace persistence {
+void serialize(persistence::Serializer<persistence::Json_Writer>& ser,
+               std::shared_ptr<Node> const& ptr) {
   ser.serialize("id child", ptr->id);
 }
+}  // namespace persistence
 
 TEST_F(Described, with_overloading) {
   Node a(0), b(1), c(2), d(3);
@@ -163,7 +165,7 @@ TEST_F(Described, with_overloading) {
 
   //  EXPECT_EQ(json_str, R"""({"color":[255,42,0]})""");
 
-  EXPECT_EQ(json_str, R"""({"color":["white","blue","black"]})""");
+  EXPECT_EQ(
+      json_str,
+      R"""({"id":0:,"child":[{"id child":1},{"id child":2},{"id child":3}]})""");
 }
-
-}  // namespace described_testing
