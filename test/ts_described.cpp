@@ -153,9 +153,11 @@ void serialize(Serializer& ser, std::shared_ptr<Node> const& ptr) {
 }
 
 TEST_F(Described, with_overloading) {
-  Node a(0), b(1);
+  Node a(0), b(1), c(2), d(3);
 
   a.child.push_back(std::make_shared<Node>(b));
+  a.child.push_back(std::make_shared<Node>(c));
+  a.child.push_back(std::make_shared<Node>(d));
 
   std::string json_str = get_json_serialize_of(a);
 
