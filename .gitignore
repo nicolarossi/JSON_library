@@ -4,3 +4,4 @@ build/
 include/version.h
 .cache
 .vscode
+compile_command.json
