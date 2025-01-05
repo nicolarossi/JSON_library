@@ -8,20 +8,11 @@
 
 namespace persistence {
 
-template <typename Serializer, Is_Serializable<Serializer> Serializable>
-void serialize(Serializer& ser, Serializable const& obj) {
-  obj.serialize(ser);
-}
-
-template <typename Serializer, typename T>
-void serialize(Serializer& ser, T const& obj) {
-  ser.serialize(obj);
-}
-
 template <Is_Writer Writer>
 class Serializer {
   Writer& wr;
 
+ protected:
   /* A 'composite'  is a 'struct' */
   void start_composite() { wr.start_composite(); }
   void end_composite() { wr.end_composite(); }
@@ -48,7 +39,7 @@ class Serializer {
     this->start_composite();
     if (var.has_value()) {
       this->serialize("has value", true);
-      serialize("value", var.value());
+      this->serialize("value", var.value());
     } else {
       this->serialize("has value", false);
     }
@@ -60,7 +51,7 @@ class Serializer {
     this->start_composite();
     if (var) {
       this->serialize("is null", false);
-      serialize("value", *var);
+      this->serialize("value", *var);
     } else {
       this->serialize("is null", true);
     }
@@ -89,7 +80,7 @@ class Serializer {
     this->start_container();
     for (auto const& el : container) {
       this->new_element();
-      persistence::serialize(*this, el);
+      serialize(el);
       this->end_element();
     }
     this->end_container();

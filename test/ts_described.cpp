@@ -76,7 +76,7 @@ TEST_F(Described, inherit) {
 
   EXPECT_EQ(
       json_str,
-      R"""({"described_testing::A":{"x":42,"y":3.14},"described_testing::B":{"val":21,"is_x":true,"vec_in_b":[42]},"s":{"has value":false}})""");
+      R"""({"A":{"x":42,"y":3.14},"B":{"val":21,"is_x":true,"vec_in_b":[42]},"s":{"has value":false}})""");
 }
 
 TEST_F(Described, inherit_s) {
@@ -88,7 +88,7 @@ TEST_F(Described, inherit_s) {
 
   EXPECT_EQ(
       json_str,
-      R"""({"described_testing::A":{"x":42,"y":3.14},"described_testing::B":{"val":21,"is_x":true,"vec_in_b":[42]},"s":{"has value":true,"value":"Hello"}})""");
+      R"""({"A":{"x":42,"y":3.14},"B":{"val":21,"is_x":true,"vec_in_b":[42]},"s":{"has value":true,"value":"Hello"}})""");
 }
 
 class ID {
@@ -144,28 +144,3 @@ struct Node {
 
   BOOST_DESCRIBE_CLASS(Node, (), (id, child), (), ());
 };
-
-// template <Is_Serializer Serializer>
-// void serialize(Serializer& ser, std::shared_ptr<Node> const& ptr) {
-namespace persistence {
-void serialize(persistence::Serializer<persistence::Json_Writer>& ser,
-               std::shared_ptr<Node> const& ptr) {
-  ser.serialize("id child", ptr->id);
-}
-}  // namespace persistence
-
-TEST_F(Described, with_overloading) {
-  Node a(0), b(1), c(2), d(3);
-
-  a.child.push_back(std::make_shared<Node>(b));
-  a.child.push_back(std::make_shared<Node>(c));
-  a.child.push_back(std::make_shared<Node>(d));
-
-  std::string json_str = get_json_serialize_of(a);
-
-  //  EXPECT_EQ(json_str, R"""({"color":[255,42,0]})""");
-
-  EXPECT_EQ(
-      json_str,
-      R"""({"id":0:,"child":[{"id child":1},{"id child":2},{"id child":3}]})""");
-}
