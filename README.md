@@ -1,27 +1,40 @@
 
-It is a header-only library to save in a JSON format C++ classes.
+It is a header-only library to save in a JSON format C++ classes, optionally described using [Boost.Describe](https://www.boost.org/doc/libs/master/libs/describe/doc/html/describe.html).
 
-It uses [Boost.Describe](https://www.boost.org/doc/libs/master/libs/describe/doc/html/describe.html).
+Note:
+[Boost.Serialization](https://www.boost.org/doc/libs/1_87_0/libs/serialization/doc/index.html) does already this job and it should be preferred in real application.
+The reason for this project is to test [Boost.Describe](https://www.boost.org/doc/libs/master/libs/describe/doc/html/describe.html) for serialization.
+In the future this library would be simplified to use completely only Boost components.
+
 
 # Responsabilities
 
-## Class 
- It defines what should be serialized/deserialized
+## Developer's Class 
+ It defines what should be serialized/deserialized, definining the method:
+  ```
+  template <Is_Serializer Serializer>
+  void serialize(Serializer& ser) const 
+  ```
 
 ## Serializator
 
-It creates satellite informations about the serialization.
-eg: the CRC values, calculates the size of the packets
+It provides serialization for partial specialized type:
+eg: serialization of : optional<T>, forward container<T>.
 
-# Writer
+The production of the stream is not its responsability.
 
-It writes on the stream the information required.
+# Writer/Reader
 
-eg: it manages the endianess
+It writes on the stream, every element contributing to the serialization.
+
+It manages the specific rapresentation (binary/xml/json etc...)
 
 
 # Use case
 
+```
+
+// The user can define the serialization directly ...
 class A {
     int x;
     double y;
@@ -33,13 +46,9 @@ class A {
         serialize(s, "y", y);
     }
 
-    template<Deserializer DS>
-    void deserialize(DS &ds){
-        ...
-    } 
 };
 
-
+// ...or can be defined using Boost.Describe .
 class Described_A{
     int x;
     double y;
@@ -60,10 +69,11 @@ int main(){
     Deserializer<Json_Writer> dsj(is);
 
     Described_A x;
-    load(dsj, x);
+    deserialize(dsj, x);
 
 }
 
+//
 template<typename Writer>
 class Serializer {
     Writer wr;
@@ -73,44 +83,31 @@ class Serializer {
         obj.serialize(*this);
         wr.end();
     };
-
-    void load(Deserializable & obj){
-        ....
-    };
+ 
 };
 
-template<typename Writer>
-class CRC_Serializer {
-    Binary_Writer b_wr;
-    Writer wr;
-
-    public:
-    void serialize(Serializable const& obj){
-        vector<byte> buffer;
-        b_wr(buffer);
-        b_wr.start();
-        obj.serialize(b_wr);
-        b_wr.end();
-
-        wr.start();        
-        obj.serialize(wr);
-
-        auto crc= calculate_CRC(b_wr);
-        wr.serialize("CRC", crc);
-        wr.end();       
-    };
-};
+namespace persistence {
+ template <Is_Serializer Serializer, Is_Serializable<Serializer> Serializable>
+ void serialize(Serializer& ser, Serializable& obj) {
+   ser.start_composite();
+   obj.serialize(ser);
+   ser.end_composite();
+ };
+}
 ```
 
-If the user want to overload a serialization should define the template, for that type:
+If the user want to overload the serialization for a specific type should define the template;
 
 ```
 namespace persistence {
 template <typename Serializer>
-void serialize(Serializer& ser, std::shared_ptr<Node> const& var) {
+void serialize(
+    Serializer& ser, 
+    std::shared_ptr<Node> const& var) {
 ....
 ```
 
+In the following case a `shared_ptr<Node>` it would be serialized using a different function, without navigating the complete `Node`.
 
 ```
 template <typename Serializer>
@@ -124,6 +121,7 @@ void serialize(Serializer& ser, std::shared_ptr<Node> const& var) {
   }
   ser.end_composite();
 };
+```
 
-}  // namespace persistence
+It is needed, in a directional cyclic graph structure.
 
