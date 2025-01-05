@@ -45,7 +45,7 @@ TEST(Overload, shared_ptr) {
   a.child.push_back(std::make_shared<Node>(c));
   a.child.push_back(std::make_shared<Node>(d));
 
-  serialize(osj, a);
+  persistence::serialize(osj, a);
 
   std::string json_str = ss.str();
 

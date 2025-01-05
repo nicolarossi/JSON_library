@@ -20,7 +20,6 @@ It writes on the stream the information required.
 eg: it manages the endianess
 
 
-
 # Use case
 
 class A {
@@ -30,8 +29,8 @@ class A {
     public:
     template<Serializer S>
     void serialize(S const &s ) const{
-        s.serialize("x", x);
-        s.serialize("y", y);
+        serialize(s, "x", x);
+        serialize(s, "y", y);
     }
 
     template<Deserializer DS>
@@ -55,13 +54,13 @@ int main(){
     A a;
     std::ostream os;
     Serializer<Json_Writer> sj(os);
-    sj.save( a);
+    serialize(sj, a);
 
     std::istream is(os.str());
     Deserializer<Json_Writer> dsj(is);
 
     Described_A x;
-    dsj.load(is, x);
+    load(dsj, x);
 
 }
 
@@ -69,7 +68,7 @@ template<typename Writer>
 class Serializer {
     Writer wr;
     public:
-    void save(Serializable const& obj){
+    void serialize(Serializable const& obj){
         wr.start();
         obj.serialize(*this);
         wr.end();
@@ -86,7 +85,7 @@ class CRC_Serializer {
     Writer wr;
 
     public:
-    void save(Serializable const& obj){
+    void serialize(Serializable const& obj){
         vector<byte> buffer;
         b_wr(buffer);
         b_wr.start();
@@ -100,6 +99,31 @@ class CRC_Serializer {
         wr.serialize("CRC", crc);
         wr.end();       
     };
-
 };
+```
+
+If the user want to overload a serialization should define the template, for that type:
+
+```
+namespace persistence {
+template <typename Serializer>
+void serialize(Serializer& ser, std::shared_ptr<Node> const& var) {
+....
+```
+
+
+```
+template <typename Serializer>
+void serialize(Serializer& ser, std::shared_ptr<Node> const& var) {
+  ser.start_composite();
+  if (var) {
+    serialize(ser, "is null", false);
+    serialize(ser, "id child", var->id);
+  } else {
+    serialize(ser, "is null", true);
+  }
+  ser.end_composite();
+};
+
+}  // namespace persistence
 
