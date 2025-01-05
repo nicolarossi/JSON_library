@@ -132,8 +132,6 @@ TEST_F(Described, vector_of_enum) {
 
   std::string json_str = get_json_serialize_of(palette);
 
-  //  EXPECT_EQ(json_str, R"""({"color":[255,42,0]})""");
-
   EXPECT_EQ(json_str, R"""({"color":["white","blue","black"]})""");
 }
 

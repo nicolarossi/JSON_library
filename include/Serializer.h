@@ -65,17 +65,14 @@ class Serializer {
 };
 
 template <
-    typename Serializer, typename Y,
+    Is_Serializer Serializer, typename Y,
     typename Bd =
         boost::describe::describe_bases<Y, boost::describe::mod_any_access>,
     typename Md =
         boost::describe::describe_members<Y, boost::describe::mod_any_access>,
     typename En = std::enable_if_t<!std::is_union<Y>::value> >
-// void serialize(Serializer& ser, Y const& obj, bool flat_object = false) {
 void serialize(Serializer& ser, Y const& obj) {
-  // if (!flat_object) {
   ser.start_composite();
-  //}
 
   boost::mp11::mp_for_each<Bd>([&](auto base) {
     using Base_Type = typename decltype(base)::type;
@@ -93,12 +90,10 @@ void serialize(Serializer& ser, Y const& obj) {
     serialize(ser, (obj).*D.pointer);
     ser.end_element();
   });
-  //  if (!flat_object) {
   ser.end_composite();
-  //  }
 }
 
-template <typename T, typename Serializer>
+template <typename T, Is_Serializer Serializer>
 void serialize(Serializer& ser, std::optional<T> const& var) {
   ser.start_composite();
   if (var.has_value()) {
@@ -110,7 +105,7 @@ void serialize(Serializer& ser, std::optional<T> const& var) {
   ser.end_composite();
 };
 
-template <typename T, typename Serializer>
+template <typename T, Is_Serializer Serializer>
 void serialize(Serializer& ser, std::shared_ptr<T> const& var) {
   ser.start_composite();
   if (var) {
@@ -122,24 +117,24 @@ void serialize(Serializer& ser, std::shared_ptr<T> const& var) {
   ser.end_composite();
 };
 
-template <typename T, typename Serializer>
+template <typename T, Is_Serializer Serializer>
   requires std::is_convertible_v<T, std::string_view>
 void serialize(Serializer& ser, T const& x) {
   ser.serialize(std::string_view(x));
 };
 
-template <Is_Primitive T, typename Serializer>
+template <Is_Primitive T, Is_Serializer Serializer>
 void serialize(Serializer& ser, T const& var) {
   ser.serialize(var);
 };
 
-template <typename E, typename Serializer>
+template <typename E, Is_Serializer Serializer>
   requires std::is_enum_v<E>
 void serialize(Serializer& ser, E const& var) {
   ser.serialize(var);
 };
 
-template <Forward_Container T, typename Serializer>
+template <Forward_Container T, Is_Serializer Serializer>
 void serialize(Serializer& ser, T const& container) {
   ser.start_container();
   for (auto const& el : container) {
@@ -153,14 +148,13 @@ void serialize(Serializer& ser, T const& container) {
 
 /* */
 template <Is_Serializer Serializer, Is_Serializable<Serializer> Serializable>
-// template <typename Serializer, typename Serializable>
 void serialize(Serializer& ser, Serializable& obj) {
   ser.start_composite();
   obj.serialize(ser);
   ser.end_composite();
 };
 
-template <typename Serializer, typename S, typename T>
+template <Is_Serializer Serializer, typename S, typename T>
   requires std::is_convertible_v<S, std::string_view>
 void serialize(Serializer& ser, S name, T const& obj) {
   ser.new_element();
