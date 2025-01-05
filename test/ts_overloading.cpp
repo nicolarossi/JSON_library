@@ -10,9 +10,6 @@
 #include "Json_Writer.h"
 #include "Serializer.h"
 
-// template <Is_Serializer Serializer>
-// void serialize(Serializer& ser, std::shared_ptr<Node> const& ptr) {
-
 struct Node {
   size_t id;
 
@@ -22,40 +19,37 @@ struct Node {
 };
 
 namespace persistence {
-template <typename Writer>
-struct Overloaded_Serializer : public persistence::Serializer<Writer> {
-  using persistence::Serializer<Writer>::serialize;
-  Overloaded_Serializer(Writer w) : persistence::Serializer<Writer>(w) {};
 
-  virtual void serialize(std::shared_ptr<Node> const& var) {
-    this->start_composite();
-    if (var) {
-      this->serialize("is null", false);
-      this->serialize("id child", var->id);
-    } else {
-      this->serialize("is null", true);
-    }
-    this->end_composite();
-  };
+template <typename Serializer>
+void serialize(Serializer& ser, std::shared_ptr<Node> const& var) {
+  ser.start_composite();
+  if (var) {
+    serialize(ser, "is null", false);
+    serialize(ser, "id child", var->id);
+  } else {
+    serialize(ser, "is null", true);
+  }
+  ser.end_composite();
 };
-};  // namespace persistence
+
+}  // namespace persistence
 
 TEST(Overload, shared_ptr) {
   Node a(0), b(1), c(2), d(3);
 
   std::stringstream ss;
   persistence::Json_Writer jw{ss};
-  persistence::Overloaded_Serializer<persistence::Json_Writer> osj{jw};
+  persistence::Serializer<persistence::Json_Writer> osj{jw};
 
   a.child.push_back(std::make_shared<Node>(b));
   a.child.push_back(std::make_shared<Node>(c));
   a.child.push_back(std::make_shared<Node>(d));
 
-  osj.serialize(a);
+  serialize(osj, a);
 
   std::string json_str = ss.str();
 
   EXPECT_EQ(
       json_str,
-      R"""({"id":0:,"child":[{"id child":1},{"id child":2},{"id child":3}]})""");
+      R"""({"id":0,"child":[{"is null":false,"id child":1},{"is null":false,"id child":2},{"is null":false,"id child":3}]})""");
 }

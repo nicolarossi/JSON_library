@@ -20,7 +20,7 @@ class Described : public testing::Test {
 
   template <typename T>
   std::string get_json_serialize_of(T&& obj) {
-    sj.serialize(obj);
+    serialize(sj, obj);
     return ss.str();
   }
 };

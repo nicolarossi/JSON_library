@@ -32,7 +32,7 @@ concept Is_Writer = requires(W w) {
 template <typename S>
 concept Is_Serializer = requires(S s) {
   // TODO
-  s.serialize("name", 42);
+  s.write_id(std::string("name"), 42);
   /*int x = 42;
   w.write("x", x);
   w.end();*/

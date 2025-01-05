@@ -21,7 +21,8 @@ class Basic : public testing::Test {
 
   template <typename T>
   std::string get_json_serialize_of(T&& obj) {
-    sj.serialize(obj);
+    persistence::serialize(sj, obj);
+
     return ss.str();
   }
 };
@@ -32,9 +33,9 @@ class A {
 
  public:
   template <Is_Serializer Serializer>
-  void serialize(Serializer& s) const {
-    s.serialize("x", x);
-    s.serialize("y", y);
+  void serialize(Serializer& ser) const {
+    persistence::serialize(ser, "x", x);
+    persistence::serialize(ser, "y", y);
   }
 };
 
@@ -57,10 +58,10 @@ class B {
   B() : val(21) {};
 
   template <Is_Serializer Serializer>
-  void serialize(Serializer& s) const {
-    s.serialize("val", val);
-    s.serialize("is_x", is_x);
-    s.serialize("vec_in_b", vec_in_b);
+  void serialize(Serializer& ser) const {
+    persistence::serialize(ser, "val", val);
+    persistence::serialize(ser, "is_x", is_x);
+    persistence::serialize(ser, "vec_in_b", vec_in_b);
   }
 };
 TEST_F(Basic, private_protected_member) {
@@ -76,9 +77,9 @@ struct C : public A, B {
 
   template <Is_Serializer Serializer>
   void serialize(Serializer& ser) const {
-    ser.serialize("Base A", *dynamic_cast<const A*>(this));
-    ser.serialize("Base B", *dynamic_cast<const B*>(this));
-    ser.serialize("s", s);
+    persistence::serialize(ser, "Base A", *dynamic_cast<const A*>(this));
+    persistence::serialize(ser, "Base B", *dynamic_cast<const B*>(this));
+    persistence::serialize(ser, "s", s);
   }
 };
 TEST_F(Basic, inherit) {
@@ -113,7 +114,7 @@ class ID {
 
   template <Is_Serializer Serializer>
   void serialize(Serializer& ser) const {
-    ser.serialize("id", id);
+    persistence::serialize(ser, "id", id);
   }
 };
 
@@ -122,7 +123,7 @@ struct D {
 
   template <Is_Serializer Serializer>
   void serialize(Serializer& ser) const {
-    ser.serialize("vector_of_a", vector_of_a);
+    persistence::serialize(ser, "vector_of_a", vector_of_a);
   }
 };
 
@@ -143,7 +144,7 @@ class Palette {
 
   template <Is_Serializer Serializer>
   void serialize(Serializer& ser) const {
-    ser.serialize("color", color);
+    persistence::serialize(ser, "color", color);
   }
 };
 
