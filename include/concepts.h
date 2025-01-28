@@ -1,5 +1,5 @@
 #pragma once
-
+#include <boost/describe.hpp>
 #include <concepts>
 #include <iostream>
 #include <ostream>
@@ -7,8 +7,7 @@
 #include <string_view>
 #include <type_traits>
 
-#include "Json_Writer.h"
-#include "Serializer.h"
+namespace persistence {
 
 template <typename T>
 concept Forward_Container = requires(T t) {
@@ -46,3 +45,5 @@ template <typename T>
 concept Is_Enum_Boost_Described = requires(T obj) {
   boost::mp11::mp_for_each<boost::describe::describe_enumerators<T> >([]() {});
 };
+
+}  // namespace persistence
